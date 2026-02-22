@@ -1147,19 +1147,105 @@
     document.getElementById('v_' + key).textContent = val;
   }
 
+  // ── Media validation ───────────────────────────────────────────
+  const ALLOWED_MIME_TYPES = [
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif',
+    'video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'
+  ];
+  const ALLOWED_EXTENSIONS = /\.(jpe?g|png|gif|webp|heic|heif|mp4|mov|webm|m4v)$/i;
+  const MAX_FILE_SIZE_MB   = 50;
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+  function validateFile(file) {
+    const errors = [];
+
+    // 1. MIME type check
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      errors.push(`"${file.name}" has an unsupported file type (${file.type || 'unknown'}).`);
+    }
+
+    // 2. Extension check (defense against mismatched MIME/extension)
+    if (!ALLOWED_EXTENSIONS.test(file.name)) {
+      errors.push(`"${file.name}" has an unsupported file extension.`);
+    }
+
+    // 3. Size check
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      errors.push(`"${file.name}" is too large (${(file.size/1024/1024).toFixed(1)} MB). Max is ${MAX_FILE_SIZE_MB} MB.`);
+    }
+
+    // 4. Empty file check
+    if (file.size === 0) {
+      errors.push(`"${file.name}" appears to be empty.`);
+    }
+
+    return errors;
+  }
+
+  function showUploadError(messages) {
+    const zone = document.getElementById('uploadZone');
+    const existing = document.getElementById('uploadError');
+    if (existing) existing.remove();
+    const div = document.createElement('div');
+    div.id = 'uploadError';
+    div.style.cssText = `
+      margin-top: 10px;
+      background: rgba(192,57,43,0.15);
+      border: 1px solid #c0392b;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #e74c3c;
+      line-height: 1.6;
+    `;
+    div.innerHTML = messages.map(m => `⚠️ ${m}`).join('<br>');
+    zone.parentNode.insertBefore(div, zone.nextSibling);
+    setTimeout(() => { if (div.parentNode) div.remove(); }, 6000);
+  }
+
   // ── Media handling ─────────────────────────────────────────────
   function handleMediaSelect(files) {
     const remaining = 10 - pendingMedia.length;
     const toProcess = Array.from(files).slice(0, remaining);
+    const allErrors = [];
+
     toProcess.forEach(file => {
+      const errors = validateFile(file);
+      if (errors.length) {
+        allErrors.push(...errors);
+        return; // skip invalid file
+      }
+
       const isVideo = file.type.startsWith('video/');
-      const reader = new FileReader();
+      const reader  = new FileReader();
       reader.onload = e => {
-        pendingMedia.push({ dataUrl: e.target.result, type: isVideo ? 'video' : 'image', name: file.name });
+        // Secondary check: verify data URL prefix matches expected type
+        const dataUrl = e.target.result;
+        const isValidDataUrl = isVideo
+          ? dataUrl.startsWith('data:video/')
+          : dataUrl.startsWith('data:image/');
+
+        if (!isValidDataUrl) {
+          showUploadError([`"${file.name}" failed content verification and was rejected.`]);
+          return;
+        }
+
+        pendingMedia.push({ dataUrl, type: isVideo ? 'video' : 'image', name: file.name });
         renderMediaPreviews();
+      };
+      reader.onerror = () => {
+        showUploadError([`"${file.name}" could not be read. Please try again.`]);
       };
       reader.readAsDataURL(file);
     });
+
+    if (allErrors.length) showUploadError(allErrors);
+
+    // Warn if extra files were ignored due to 10-file limit
+    const ignored = Array.from(files).length - toProcess.length;
+    if (ignored > 0) {
+      showUploadError([`${ignored} file(s) were ignored — maximum 10 files per rating.`]);
+    }
   }
 
   function renderMediaPreviews() {
