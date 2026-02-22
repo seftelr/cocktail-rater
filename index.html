@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sip & Rate</title>
+  <style>
+    :root {
+      --bg: #0f0a06;
+      --surface: #1c1208;
+      --card: #261a0c;
+      --accent: #e8a94d;
+      --accent2: #c46a1e;
+      --text: #f5ead8;
+      --muted: #8a7560;
+      --border: #3a2a18;
+      --danger: #c0392b;
+      --success: #27ae60;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--surface), #0f0a06);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .app-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+
+    .app-title span { color: var(--text); }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 14px 6px 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      transition: border-color 0.2s;
+    }
+
+    .user-pill:hover { border-color: var(--accent); }
+
+    .avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--accent2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; color: white;
+    }
+
+    /* ── Tab bar ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-top: 14px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: #0f0a06;
+    }
+
+    /* ── Views ── */
+    .view { display: none; padding: 16px 16px 0; }
+    .view.active { display: block; }
+
+    /* ── FAB ── */
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      width: 58px; height: 58px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #0f0a06;
+      font-size: 28px;
+      font-weight: 300;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(232,169,77,0.4);
+      z-index: 99;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(232,169,77,0.55); }
+
+    /* ── Modal ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 200;
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-backdrop.open { display: flex; align-items: flex-end; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0;
+      width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 20px 20px 36px;
+      animation: slideUp 0.25s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .modal-title { font-size: 18px; font-weight: 700; color: var(--accent); }
+
+    .close-btn {
+      background: var(--card);
+      border: none;
+      color: var(--muted);
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Form ── */
+    .form-section { margin-bottom: 20px; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .form-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    input, select, textarea {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 15px;
+      padding: 10px 12px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    select option { background: var(--card); }
+    textarea { resize: vertical; min-height: 72px; }
+
+    /* ── Slider ratings ── */
+    .rating-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .rating-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .rating-row-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rating-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .rating-label .emoji { margin-right: 6px; }
+
+    .rating-val-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rating-val {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--accent);
+      min-width: 38px;
+      text-align: right;
+    }
+
+    .rating-sub {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--border);
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(232,169,77,0.5);
+    }
+
+    /* ── Submit ── */
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: #0f0a06;
+      font-size: 16px;
+      font-weight: 800;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.2s;
+    }
+
+    .submit-btn:hover { opacity: 0.9; }
+
+    /* ── Media upload ── */
+    .media-upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    .media-upload-zone:hover, .media-upload-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(232,169,77,0.05);
+    }
+
+    .media-upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      border: none;
+      background: transparent;
+    }
+
+    .upload-icon { font-size: 28px; margin-bottom: 6px; }
+    .upload-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .upload-sub   { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    .media-previews {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .media-thumb {
+      position: relative;
+      width: 72px; height: 72px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .media-thumb img, .media-thumb video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      border: none;
+      padding: 0;
+      background: transparent;
+    }
+
+    .media-thumb .remove-media {
+      position: absolute;
+      top: 3px; right: 3px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      border: none;
+      line-height: 1;
+    }
+
+    .media-thumb .video-badge {
+      position: absolute;
+      bottom: 3px; left: 3px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    /* ── Feed cards ── */
+    .feed { display: flex; flex-direction: column; gap: 14px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .card-body { padding: 16px; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Card media gallery ── */
+    .card-media {
+      display: flex;
+      gap: 3px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .card-media::-webkit-scrollbar { display: none; }
+
+    .card-media-item {
+      flex-shrink: 0;
+      height: 180px;
+      border-radius: 0;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .card-media-item:first-child:last-child {
+      width: 100%;
+    }
+
+    .card-media-item:not(:first-child:last-child) {
+      width: 140px;
+    }
+
+    .card-media-item img, .card-media-item video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      border: none;
+      padding: 0;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .drink-name {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .bar-name {
+      font-size: 13px;
+      color: var(--accent);
+      margin-top: 2px;
+    }
+
+    .bar-location {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .overall-score {
+      background: var(--accent);
+      color: #0f0a06;
+      font-size: 20px;
+      font-weight: 900;
+      border-radius: 10px;
+      padding: 6px 12px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .tag {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      color: var(--muted);
+    }
+
+    .tag.spirit { border-color: var(--accent2); color: var(--accent2); }
+
+    .score-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .score-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .score-bar-label {
+      font-size: 11px;
+      color: var(--muted);
+      width: 72px;
+      flex-shrink: 0;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--accent);
+      transition: width 0.5s ease;
+    }
+
+    .score-bar-val {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      width: 28px;
+      text-align: right;
+    }
+
+    .card-note {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.5;
+      font-style: italic;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .rater-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent2);
+    }
+
+    .card-time {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-icon  { font-size: 48px; margin-bottom: 12px; }
+    .empty-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .empty-sub   { font-size: 14px; }
+
+    /* ── Leaderboard ── */
+    .lb-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .lb-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 14px;
+    }
+
+    .lb-row:last-child { border-bottom: none; }
+
+    .lb-rank { font-size: 18px; font-weight: 900; width: 28px; text-align: center; }
+    .lb-rank.gold   { color: #f1c40f; }
+    .lb-rank.silver { color: #bdc3c7; }
+    .lb-rank.bronze { color: #cd7f32; }
+    .lb-rank.other  { color: var(--muted); }
+
+    .lb-info  { flex: 1; }
+    .lb-drink { font-size: 15px; font-weight: 700; }
+    .lb-bar   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .lb-score { font-size: 22px; font-weight: 900; color: var(--accent); }
+
+    /* ── Stats view ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-num   { font-size: 32px; font-weight: 900; color: var(--accent); line-height: 1; }
+    .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 600; }
+
+    /* ── Name modal ── */
+    .name-modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .name-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+
+    .name-box h2 { font-size: 22px; color: var(--accent); margin-bottom: 6px; }
+    .name-box p  { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+
+    .name-input {
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .name-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #0f0a06;
+      font-size: 16px;
+      font-weight: 800;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    /* ── Feed toolbar (filter + sort) ── */
+    .feed-toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .filter-bar::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      color: #0f0a06;
+      border-color: var(--accent);
+    }
+
+    /* ── Sort bar ── */
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sort-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      flex-shrink: 0;
+    }
+
+    .sort-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .sort-chips::-webkit-scrollbar { display: none; }
+
+    .sort-chip {
+      flex-shrink: 0;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sort-chip.active {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+
+    .sort-dir { font-size: 10px; }
+
+    /* ── Lightbox ── */
+    .lightbox {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 400;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox.open { display: flex; }
+
+    .lightbox img, .lightbox video {
+      max-width: 95vw;
+      max-height: 90vh;
+      border-radius: var(--radius);
+      object-fit: contain;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      font-size: 22px;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* scrollbar for modal */
+    .modal::-webkit-scrollbar { width: 4px; }
+    .modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+
+    /* country field */
+    .form-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Name setup modal -->
+<div class="name-modal" id="nameModal">
+  <div class="name-box">
+    <div style="font-size:40px;margin-bottom:10px">🍸</div>
+    <h2>Sip &amp; Rate</h2>
+    <p>Enter your name to join the session</p>
+    <input class="name-input" id="nameInput" type="text" placeholder="Your name…" maxlength="24" />
+    <button class="name-btn" onclick="saveName()">Let's Go</button>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">×</button>
+  <div id="lightboxContent"></div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="header-top">
+    <div class="app-title">Sip <span>&amp;</span> Rate 🍸</div>
+    <div class="user-pill" onclick="changeName()">
+      <div class="avatar" id="avatarEl">?</div>
+      <span id="userNameEl">…</span>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('feed',this)">Feed</div>
+    <div class="tab" onclick="switchTab('leaderboard',this)">Top Drinks</div>
+    <div class="tab" onclick="switchTab('stats',this)">Stats</div>
+  </div>
+</header>
+
+<!-- Feed -->
+<div class="view active" id="view-feed">
+  <div class="feed-toolbar">
+    <div class="filter-bar">
+      <div class="filter-chip active" onclick="setFilter('all',this)">All</div>
+      <div class="filter-chip" onclick="setFilter('mine',this)">My Ratings</div>
+    </div>
+    <div class="sort-bar">
+      <div class="sort-label">Sort</div>
+      <div class="sort-chips">
+        <div class="sort-chip active" onclick="setSort('newest',this)">
+          <span>Newest</span><span class="sort-dir">↓</span>
+        </div>
+        <div class="sort-chip" onclick="setSort('score',this)">
+          <span>Score</span><span class="sort-dir">↓</span>
+        </div>
+        <div class="sort-chip" onclick="setSort('drink',this)">
+          <span>Drink</span><span class="sort-dir">A↓</span>
+        </div>
+        <div class="sort-chip" onclick="setSort('city',this)">
+          <span>City</span><span class="sort-dir">A↓</span>
+        </div>
+        <div class="sort-chip" onclick="setSort('country',this)">
+          <span>Country</span><span class="sort-dir">A↓</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="feed" id="feedList"></div>
+</div>
+
+<!-- Leaderboard -->
+<div class="view" id="view-leaderboard">
+  <div id="leaderboardList"></div>
+</div>
+
+<!-- Stats -->
+<div class="view" id="view-stats">
+  <div id="statsContent"></div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openForm()">+</button>
+
+<!-- Rating modal -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeOnBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add a Rating</div>
+      <button class="close-btn" onclick="closeForm()">×</button>
+    </div>
+
+    <form id="ratingForm" onsubmit="submitRating(event)">
+
+      <!-- Drink info -->
+      <div class="form-section">
+        <div class="section-label">Drink Info</div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label>Cocktail Name *</label>
+          <input id="f_drink" type="text" placeholder="e.g. Negroni" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Bar Name *</label>
+            <input id="f_bar" type="text" placeholder="e.g. The Dead Rabbit" required />
+          </div>
+          <div class="form-group">
+            <label>Price Paid</label>
+            <input id="f_price" type="text" placeholder="e.g. $18" />
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>City</label>
+            <input id="f_city" type="text" placeholder="e.g. NYC" />
+          </div>
+          <div class="form-group">
+            <label>State / Region</label>
+            <input id="f_state" type="text" placeholder="e.g. NY" />
+          </div>
+          <div class="form-group">
+            <label>Country</label>
+            <input id="f_country" type="text" placeholder="e.g. USA" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Spirit & region -->
+      <div class="form-section">
+        <div class="section-label">Spirit &amp; Origin</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Spirit Type</label>
+            <select id="f_spirit">
+              <option value="">Select…</option>
+              <option>Whiskey / Bourbon</option>
+              <option>Scotch</option>
+              <option>Rum</option>
+              <option>Tequila / Mezcal</option>
+              <option>Gin</option>
+              <option>Vodka</option>
+              <option>Cognac / Brandy</option>
+              <option>Amaro / Aperitivo</option>
+              <option>Wine / Champagne</option>
+              <option>Non-alcoholic</option>
+              <option>Other / Mixed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Spirit Origin</label>
+            <input id="f_region" type="text" placeholder="e.g. Islay, Oaxaca" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Scores -->
+      <div class="form-section">
+        <div class="section-label">Scores (1.0 – 10.0)</div>
+        <div class="rating-grid">
+
+          <div class="rating-row">
+            <div class="rating-row-top">
+              <div class="rating-label"><span class="emoji">👅</span>Taste</div>
+              <div class="rating-val-box">
+                <div class="rating-val" id="v_taste">7.0</div>
+                <div class="rating-sub">/10</div>
+              </div>
+            </div>
+            <input type="range" id="s_taste" min="10" max="100" value="70" step="1"
+              oninput="updateVal('taste', (this.value/10).toFixed(1))" />
+          </div>
+
+          <div class="rating-row">
+            <div class="rating-row-top">
+              <div class="rating-label"><span class="emoji">✨</span>Ambiance</div>
+              <div class="rating-val-box">
+                <div class="rating-val" id="v_ambiance">7.0</div>
+                <div class="rating-sub">/10</div>
+              </div>
+            </div>
+            <input type="range" id="s_ambiance" min="10" max="100" value="70" step="1"
+              oninput="updateVal('ambiance', (this.value/10).toFixed(1))" />
+          </div>
+
+          <div class="rating-row">
+            <div class="rating-row-top">
+              <div class="rating-label"><span class="emoji">🤝</span>Service</div>
+              <div class="rating-val-box">
+                <div class="rating-val" id="v_service">7.0</div>
+                <div class="rating-sub">/10</div>
+              </div>
+            </div>
+            <input type="range" id="s_service" min="10" max="100" value="70" step="1"
+              oninput="updateVal('service', (this.value/10).toFixed(1))" />
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-section">
+        <div class="section-label">Tasting Notes</div>
+        <textarea id="f_notes" placeholder="Describe the flavour, smell, finish, vibe…"></textarea>
+      </div>
+
+      <!-- Media upload -->
+      <div class="form-section">
+        <div class="section-label">Photos &amp; Videos</div>
+        <div class="media-upload-zone" id="uploadZone">
+          <input type="file" id="mediaInput" accept="image/*,video/*" multiple
+            onchange="handleMediaSelect(this.files)"
+            ondragover="this.parentElement.classList.add('drag-over')"
+            ondragleave="this.parentElement.classList.remove('drag-over')"
+            ondrop="this.parentElement.classList.remove('drag-over')" />
+          <div class="upload-icon">📷</div>
+          <div class="upload-label">Tap to add photos or videos</div>
+          <div class="upload-sub">JPEG, PNG, GIF, MP4, MOV — up to 10 files</div>
+        </div>
+        <div class="media-previews" id="mediaPreviews"></div>
+      </div>
+
+      <button type="submit" class="submit-btn">Submit Rating</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────
+  const STORAGE_KEY = 'sip_and_rate_v2';
+  let currentUser   = localStorage.getItem('sip_user') || '';
+  let currentFilter = 'all';
+  let currentSort   = 'newest';
+  let sortDir       = {}; // per-sort direction toggle
+  let pendingMedia  = []; // {dataUrl, type: 'image'|'video', name}
+
+  function getData() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function saveData(arr) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  }
+
+  // ── Name setup ─────────────────────────────────────────────────
+  function checkName() {
+    if (!currentUser) {
+      document.getElementById('nameModal').style.display = 'flex';
+    } else {
+      document.getElementById('nameModal').style.display = 'none';
+      setHeaderUser(currentUser);
+    }
+  }
+
+  function saveName() {
+    const val = document.getElementById('nameInput').value.trim();
+    if (!val) return;
+    currentUser = val;
+    localStorage.setItem('sip_user', val);
+    document.getElementById('nameModal').style.display = 'none';
+    setHeaderUser(val);
+    renderAll();
+  }
+
+  function changeName() {
+    document.getElementById('nameInput').value = currentUser;
+    document.getElementById('nameModal').style.display = 'flex';
+  }
+
+  document.getElementById('nameInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveName();
+  });
+
+  function setHeaderUser(name) {
+    document.getElementById('userNameEl').textContent = name;
+    document.getElementById('avatarEl').textContent = name.charAt(0).toUpperCase();
+  }
+
+  // ── Tabs ───────────────────────────────────────────────────────
+  function switchTab(name, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('view-' + name).classList.add('active');
+    renderAll();
+  }
+
+  // ── Filter ─────────────────────────────────────────────────────
+  function setFilter(f, el) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderFeed();
+  }
+
+  // ── Sort ───────────────────────────────────────────────────────
+  function setSort(key, el) {
+    if (currentSort === key) {
+      sortDir[key] = sortDir[key] === 'asc' ? 'desc' : 'asc';
+    } else {
+      currentSort = key;
+      if (!sortDir[key]) sortDir[key] = key === 'newest' || key === 'score' ? 'desc' : 'asc';
+    }
+    document.querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    // update arrow
+    const arrows = { newest: ['↓','↑'], score: ['↓','↑'], drink: ['A↓','A↑'], city: ['A↓','A↑'], country: ['A↓','A↑'] };
+    el.querySelector('.sort-dir').textContent = sortDir[key] === 'asc' ? arrows[key][1] : arrows[key][0];
+    renderFeed();
+  }
+
+  function applySortFilter(data) {
+    let arr = [...data];
+    if (currentFilter === 'mine') arr = arr.filter(d => d.user === currentUser);
+    const dir = sortDir[currentSort] === 'asc' ? 1 : -1;
+    arr.sort((a, b) => {
+      switch (currentSort) {
+        case 'newest':  return dir * (new Date(b.ts) - new Date(a.ts));
+        case 'score':   return dir * (b.overall - a.overall);
+        case 'drink':   return dir * a.drink.localeCompare(b.drink);
+        case 'city':    return dir * (a.city||'').localeCompare(b.city||'');
+        case 'country': return dir * (a.country||'').localeCompare(b.country||'');
+        default: return 0;
+      }
+    });
+    return arr;
+  }
+
+  // ── Form modal ─────────────────────────────────────────────────
+  function openForm() {
+    pendingMedia = [];
+    document.getElementById('mediaPreviews').innerHTML = '';
+    document.getElementById('mediaInput').value = '';
+    document.getElementById('modalBackdrop').classList.add('open');
+    document.getElementById('f_drink').focus();
+  }
+
+  function closeForm() {
+    document.getElementById('modalBackdrop').classList.remove('open');
+  }
+
+  function closeOnBackdrop(e) {
+    if (e.target === document.getElementById('modalBackdrop')) closeForm();
+  }
+
+  function updateVal(key, val) {
+    document.getElementById('v_' + key).textContent = val;
+  }
+
+  // ── Media handling ─────────────────────────────────────────────
+  function handleMediaSelect(files) {
+    const remaining = 10 - pendingMedia.length;
+    const toProcess = Array.from(files).slice(0, remaining);
+    toProcess.forEach(file => {
+      const isVideo = file.type.startsWith('video/');
+      const reader = new FileReader();
+      reader.onload = e => {
+        pendingMedia.push({ dataUrl: e.target.result, type: isVideo ? 'video' : 'image', name: file.name });
+        renderMediaPreviews();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderMediaPreviews() {
+    const container = document.getElementById('mediaPreviews');
+    container.innerHTML = pendingMedia.map((m, i) => `
+      <div class="media-thumb">
+        ${m.type === 'image'
+          ? `<img src="${m.dataUrl}" alt="preview" />`
+          : `<video src="${m.dataUrl}" muted playsinline></video><div class="video-badge">VID</div>`}
+        <button class="remove-media" onclick="removeMedia(${i})">×</button>
+      </div>`).join('');
+  }
+
+  function removeMedia(i) {
+    pendingMedia.splice(i, 1);
+    renderMediaPreviews();
+  }
+
+  // ── Submit ─────────────────────────────────────────────────────
+  function submitRating(e) {
+    e.preventDefault();
+    const scores = {
+      taste:    +(document.getElementById('s_taste').value / 10).toFixed(1),
+      ambiance: +(document.getElementById('s_ambiance').value / 10).toFixed(1),
+      service:  +(document.getElementById('s_service').value / 10).toFixed(1),
+    };
+    const overall = +(Object.values(scores).reduce((a,b)=>a+b,0)/3).toFixed(1);
+
+    const entry = {
+      id:      Date.now(),
+      user:    currentUser,
+      drink:   document.getElementById('f_drink').value.trim(),
+      bar:     document.getElementById('f_bar').value.trim(),
+      city:    document.getElementById('f_city').value.trim(),
+      state:   document.getElementById('f_state').value.trim(),
+      country: document.getElementById('f_country').value.trim(),
+      spirit:  document.getElementById('f_spirit').value,
+      region:  document.getElementById('f_region').value.trim(),
+      price:   document.getElementById('f_price').value.trim(),
+      notes:   document.getElementById('f_notes').value.trim(),
+      media:   [...pendingMedia],
+      scores,
+      overall,
+      ts: new Date().toISOString(),
+    };
+
+    const data = getData();
+    data.unshift(entry);
+    saveData(data);
+
+    // reset form
+    e.target.reset();
+    ['taste','ambiance','service'].forEach(k => {
+      document.getElementById('s_'+k).value = 70;
+      document.getElementById('v_'+k).textContent = '7.0';
+    });
+    pendingMedia = [];
+    document.getElementById('mediaPreviews').innerHTML = '';
+    closeForm();
+    renderAll();
+  }
+
+  // ── Rendering ──────────────────────────────────────────────────
+  function renderAll() {
+    renderFeed();
+    renderLeaderboard();
+    renderStats();
+  }
+
+  function timeAgo(iso) {
+    const diff = (Date.now() - new Date(iso)) / 1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    return Math.floor(diff/86400) + 'd ago';
+  }
+
+  function scoreColor(s) {
+    if (s >= 8) return '#27ae60';
+    if (s >= 6) return '#e8a94d';
+    return '#c0392b';
+  }
+
+  function locationStr(d) {
+    return [d.city, d.state, d.country].filter(Boolean).join(', ');
+  }
+
+  function renderFeed() {
+    const data = applySortFilter(getData());
+    const el = document.getElementById('feedList');
+
+    if (!data.length) {
+      el.innerHTML = `<div class="empty">
+        <div class="empty-icon">🍹</div>
+        <div class="empty-title">No ratings yet</div>
+        <div class="empty-sub">Tap + to rate your first drink!</div>
+      </div>`;
+      return;
+    }
+
+    el.innerHTML = data.map(d => {
+      const loc = locationStr(d);
+      const tags = [d.spirit, d.region, d.price].filter(Boolean);
+      const scoreRows = [
+        ['Taste',    d.scores.taste],
+        ['Ambiance', d.scores.ambiance],
+        ['Service',  d.scores.service],
+      ];
+      const mediaHtml = d.media && d.media.length
+        ? `<div class="card-media">${d.media.map((m,i) =>
+            `<div class="card-media-item" onclick="openLightbox(${d.id},${i})">
+              ${m.type === 'image'
+                ? `<img src="${m.dataUrl}" alt="${esc(d.drink)}" loading="lazy" />`
+                : `<video src="${m.dataUrl}" muted playsinline></video>`}
+            </div>`).join('')}</div>`
+        : '';
+
+      return `<div class="card">
+        ${mediaHtml}
+        <div class="card-body">
+          <div class="card-top">
+            <div>
+              <div class="drink-name">${esc(d.drink)}</div>
+              <div class="bar-name">${esc(d.bar)}</div>
+              ${loc ? `<div class="bar-location">📍 ${esc(loc)}</div>` : ''}
+            </div>
+            <div class="overall-score" style="background:${scoreColor(d.overall)}">${d.overall}</div>
+          </div>
+          ${tags.length ? `<div class="meta-tags">${tags.map(t=>`<div class="tag ${t===d.spirit?'spirit':''}">${esc(t)}</div>`).join('')}</div>` : ''}
+          <div class="score-bars">
+            ${scoreRows.map(([lbl,val])=>`
+              <div class="score-bar-row">
+                <div class="score-bar-label">${lbl}</div>
+                <div class="bar-track"><div class="bar-fill" style="width:${val*10}%;background:${scoreColor(val)}"></div></div>
+                <div class="score-bar-val">${val}</div>
+              </div>`).join('')}
+          </div>
+          ${d.notes ? `<div class="card-note">"${esc(d.notes)}"</div>` : ''}
+          <div class="card-footer">
+            <div class="rater-name">— ${esc(d.user)}</div>
+            <div class="card-time">${timeAgo(d.ts)}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Lightbox ───────────────────────────────────────────────────
+  function openLightbox(entryId, mediaIdx) {
+    const entry = getData().find(d => d.id === entryId);
+    if (!entry || !entry.media) return;
+    const m = entry.media[mediaIdx];
+    const lbContent = document.getElementById('lightboxContent');
+    lbContent.innerHTML = m.type === 'image'
+      ? `<img src="${m.dataUrl}" alt="photo" />`
+      : `<video src="${m.dataUrl}" controls autoplay style="max-width:95vw;max-height:85vh;border-radius:var(--radius)"></video>`;
+    document.getElementById('lightbox').classList.add('open');
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.getElementById('lightboxContent').innerHTML = '';
+  }
+
+  // ── Leaderboard ────────────────────────────────────────────────
+  function renderLeaderboard() {
+    const data = getData();
+    const el = document.getElementById('leaderboardList');
+    if (!data.length) {
+      el.innerHTML = `<div class="empty"><div class="empty-icon">🏆</div><div class="empty-title">No ratings yet</div></div>`;
+      return;
+    }
+    const sorted = [...data].sort((a,b) => b.overall - a.overall).slice(0, 20);
+    const medals = ['gold','silver','bronze'];
+    el.innerHTML = `<div class="lb-card">${sorted.map((d,i) => `
+      <div class="lb-row">
+        <div class="lb-rank ${medals[i]||'other'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`}</div>
+        <div class="lb-info">
+          <div class="lb-drink">${esc(d.drink)}</div>
+          <div class="lb-bar">${esc(d.bar)}${locationStr(d)?' · '+esc(locationStr(d)):''} · by ${esc(d.user)}</div>
+        </div>
+        <div class="lb-score" style="color:${scoreColor(d.overall)}">${d.overall}</div>
+      </div>`).join('')}</div>`;
+  }
+
+  // ── Stats ──────────────────────────────────────────────────────
+  function renderStats() {
+    const data = getData();
+    const el = document.getElementById('statsContent');
+    if (!data.length) {
+      el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">No data yet</div></div>`;
+      return;
+    }
+
+    const totalRatings = data.length;
+    const uniqueBars   = new Set(data.map(d=>d.bar.toLowerCase())).size;
+    const uniqueDrinks = new Set(data.map(d=>d.drink.toLowerCase())).size;
+    const uniqueCountries = new Set(data.map(d=>d.country).filter(Boolean).map(c=>c.toLowerCase())).size;
+    const avgOverall   = (data.reduce((s,d)=>s+d.overall,0)/data.length).toFixed(1);
+
+    const spiritMap = {};
+    data.forEach(d => { if(d.spirit){ spiritMap[d.spirit]=(spiritMap[d.spirit]||0)+1; } });
+    const spirits = Object.entries(spiritMap).sort((a,b)=>b[1]-a[1]);
+
+    const raterMap = {};
+    data.forEach(d => { raterMap[d.user]=(raterMap[d.user]||0)+1; });
+    const raters = Object.entries(raterMap).sort((a,b)=>b[1]-a[1]);
+
+    const barAvg = {}; const barCount = {};
+    data.forEach(d => {
+      barAvg[d.bar] = (barAvg[d.bar]||0) + d.overall;
+      barCount[d.bar] = (barCount[d.bar]||0) + 1;
+    });
+    const topBar = Object.entries(barAvg)
+      .map(([b,s]) => [b, (s/barCount[b]).toFixed(1)])
+      .sort((a,b)=>b[1]-a[1])[0];
+
+    el.innerHTML = `
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num">${totalRatings}</div><div class="stat-label">Ratings</div></div>
+        <div class="stat-card"><div class="stat-num">${avgOverall}</div><div class="stat-label">Avg Score</div></div>
+        <div class="stat-card"><div class="stat-num">${uniqueBars}</div><div class="stat-label">Bars</div></div>
+        <div class="stat-card"><div class="stat-num">${uniqueCountries||uniqueDrinks}</div><div class="stat-label">${uniqueCountries?'Countries':'Drinks'}</div></div>
+      </div>
+
+      ${topBar ? `<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Top Bar</div>
+      <div class="lb-card" style="margin-bottom:16px">
+        <div class="lb-row">
+          <div style="font-size:22px">🏅</div>
+          <div class="lb-info">
+            <div class="lb-drink">${esc(topBar[0])}</div>
+            <div class="lb-bar">Avg score</div>
+          </div>
+          <div class="lb-score">${topBar[1]}</div>
+        </div>
+      </div>` : ''}
+
+      ${spirits.length ? `
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Spirit Breakdown</div>
+        <div class="lb-card" style="margin-bottom:16px">
+          ${spirits.map(([s,c]) => `<div class="lb-row">
+            <div class="lb-info"><div class="lb-drink">${esc(s)}</div></div>
+            <div class="lb-score" style="font-size:16px;color:var(--accent2)">${c} drink${c>1?'s':''}</div>
+          </div>`).join('')}
+        </div>` : ''}
+
+      ${raters.length > 1 ? `
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Raters</div>
+        <div class="lb-card">
+          ${raters.map(([r,c]) => `<div class="lb-row">
+            <div class="avatar" style="width:32px;height:32px;font-size:14px;background:var(--accent2);flex-shrink:0">${r.charAt(0).toUpperCase()}</div>
+            <div class="lb-info"><div class="lb-drink">${esc(r)}</div></div>
+            <div class="lb-score" style="font-size:16px;color:var(--muted)">${c} rating${c>1?'s':''}</div>
+          </div>`).join('')}
+        </div>` : ''}
+    `;
+  }
+
+  function esc(str) {
+    return String(str||'')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  // ── Init ───────────────────────────────────────────────────────
+  sortDir = { newest: 'desc', score: 'desc', drink: 'asc', city: 'asc', country: 'asc' };
+  checkName();
+  renderAll();
+</script>
+</body>
+</html>
