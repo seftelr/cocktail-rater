@@ -115,6 +115,7 @@
     .view { display: none; padding: 16px 16px 0; }
     .view.active { display: block; }
     .view#view-map { padding: 0; }
+    .view#view-media { padding: 0; }
 
     /* ── FAB ── */
     .fab {
@@ -464,13 +465,8 @@
       cursor: pointer;
     }
 
-    .card-media-item:first-child:last-child {
-      width: 100%;
-    }
-
-    .card-media-item:not(:first-child:last-child) {
-      width: 140px;
-    }
+    .card-media-item:first-child:last-child { width: 100%; }
+    .card-media-item:not(:first-child:last-child) { width: 140px; }
 
     .card-media-item img, .card-media-item video {
       width: 100%; height: 100%;
@@ -487,23 +483,9 @@
       margin-bottom: 10px;
     }
 
-    .drink-name {
-      font-size: 17px;
-      font-weight: 800;
-      color: var(--text);
-    }
-
-    .bar-name {
-      font-size: 13px;
-      color: var(--accent);
-      margin-top: 2px;
-    }
-
-    .bar-location {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 1px;
-    }
+    .drink-name { font-size: 17px; font-weight: 800; color: var(--text); }
+    .bar-name   { font-size: 13px; color: var(--accent); margin-top: 2px; }
+    .bar-location { font-size: 12px; color: var(--muted); margin-top: 1px; }
 
     .overall-score {
       background: var(--accent);
@@ -595,15 +577,35 @@
       border-top: 1px solid var(--border);
     }
 
-    .rater-name {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--accent2);
+    .rater-name { font-size: 12px; font-weight: 600; color: var(--accent2); }
+    .card-time  { font-size: 11px; color: var(--muted); }
+
+    /* ── Recipe pill on card ── */
+    .recipe-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
     }
 
-    .card-time {
-      font-size: 11px;
-      color: var(--muted);
+    .recipe-pill:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .recipe-pill.has-recipe {
+      border-color: var(--accent2);
+      color: var(--accent2);
+      background: rgba(196,106,30,0.1);
     }
 
     /* ── Empty state ── */
@@ -645,10 +647,9 @@
     .lb-info  { flex: 1; }
     .lb-drink { font-size: 15px; font-weight: 700; }
     .lb-bar   { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
     .lb-score { font-size: 22px; font-weight: 900; color: var(--accent); }
 
-    /* ── Spirit filter bar (leaderboard + stats) ── */
+    /* ── Spirit filter bar ── */
     .spirit-filter-bar {
       display: flex;
       gap: 6px;
@@ -715,10 +716,8 @@
       background: var(--card);
     }
 
-    .media-grid-item img,
-    .media-grid-item video {
-      width: 100%;
-      height: 100%;
+    .media-grid-item img, .media-grid-item video {
+      width: 100%; height: 100%;
       object-fit: cover;
       display: block;
     }
@@ -737,23 +736,12 @@
       padding: 8px;
     }
 
-    .media-grid-drink {
-      font-size: 11px;
-      font-weight: 700;
-      color: white;
-      line-height: 1.2;
-    }
-
-    .media-grid-bar {
-      font-size: 10px;
-      color: rgba(255,255,255,0.7);
-      margin-top: 2px;
-    }
+    .media-grid-drink { font-size: 11px; font-weight: 700; color: white; line-height: 1.2; }
+    .media-grid-bar   { font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 2px; }
 
     .media-grid-badge {
       position: absolute;
-      top: 6px;
-      left: 6px;
+      top: 6px; left: 6px;
       background: rgba(0,0,0,0.6);
       color: white;
       font-size: 10px;
@@ -763,10 +751,7 @@
     }
 
     /* ── Map view ── */
-    #mapContainer {
-      width: 100%;
-      height: calc(100vh - 130px);
-    }
+    #mapContainer { width: 100%; height: calc(100vh - 130px); }
 
     .map-empty {
       display: flex;
@@ -779,7 +764,6 @@
       padding: 20px;
     }
 
-    /* Leaflet popup dark theme override */
     .leaflet-popup-content-wrapper {
       background: var(--card);
       color: var(--text);
@@ -792,6 +776,292 @@
     .leaflet-popup-content { margin: 12px 14px; }
     .leaflet-popup-content strong { color: var(--accent); }
     .leaflet-container a.leaflet-popup-close-button { color: var(--muted); }
+
+    /* ── Recipe tab cards ── */
+    .recipe-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .recipe-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .recipe-card:hover { border-color: var(--accent); }
+
+    .recipe-card-header {
+      background: linear-gradient(135deg, #2e1d0a, #1c1208);
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .recipe-card-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .recipe-card-bar {
+      font-size: 12px;
+      color: var(--accent);
+      margin-top: 3px;
+    }
+
+    .recipe-card-body { padding: 14px 16px; }
+
+    .recipe-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .recipe-badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      color: var(--accent2);
+    }
+
+    .recipe-ingredients-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .recipe-ingr-row {
+      display: flex;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .recipe-ingr-amount {
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 48px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .recipe-ingr-name { color: var(--text); }
+
+    .recipe-more {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── Recipe modal ── */
+    .recipe-view-header {
+      text-align: center;
+      padding: 8px 0 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .recipe-view-drink {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .recipe-view-bar {
+      font-size: 14px;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    .recipe-view-loc {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .recipe-view-badges {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .recipe-view-badge {
+      background: rgba(196,106,30,0.15);
+      border: 1px solid var(--accent2);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 14px;
+      color: var(--accent2);
+    }
+
+    .recipe-section-title {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .recipe-ingredients {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .recipe-ingr-line {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .recipe-ingr-line:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .recipe-ingr-line .amount {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--accent);
+      min-width: 56px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .recipe-ingr-line .ingr-name {
+      font-size: 15px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .recipe-instructions {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      margin-bottom: 20px;
+    }
+
+    .recipe-garnish-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-bottom: 20px;
+    }
+
+    .recipe-garnish-line .garnish-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .recipe-garnish-line .garnish-val {
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    /* ── Ingredient rows in edit form ── */
+    .ingr-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+
+    .ingr-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .ingr-row .ingr-amount {
+      width: 80px;
+      flex-shrink: 0;
+      font-size: 14px;
+      padding: 8px 10px;
+    }
+
+    .ingr-row .ingr-name {
+      flex: 1;
+      font-size: 14px;
+      padding: 8px 10px;
+    }
+
+    .ingr-row .ingr-remove {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .add-ingr-btn {
+      background: transparent;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 9px;
+      width: 100%;
+      cursor: pointer;
+      text-align: center;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      margin-bottom: 4px;
+    }
+
+    .add-ingr-btn:hover { border-color: var(--accent); }
+
+    .recipe-action-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .recipe-edit-btn {
+      flex: 1;
+      padding: 13px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .recipe-edit-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .recipe-save-btn {
+      flex: 2;
+      padding: 13px;
+      background: var(--accent);
+      color: #0f0a06;
+      font-size: 14px;
+      font-weight: 800;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: inherit;
+    }
 
     /* ── Name modal ── */
     .name-modal {
@@ -817,11 +1087,7 @@
     .name-box h2 { font-size: 22px; color: var(--accent); margin-bottom: 6px; }
     .name-box p  { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
 
-    .name-input {
-      font-size: 18px;
-      text-align: center;
-      margin-bottom: 14px;
-    }
+    .name-input { font-size: 18px; text-align: center; margin-bottom: 14px; }
 
     .name-btn {
       width: 100%;
@@ -835,7 +1101,7 @@
       cursor: pointer;
     }
 
-    /* ── Feed toolbar (filter + sort) ── */
+    /* ── Feed toolbar ── */
     .feed-toolbar {
       display: flex;
       flex-direction: column;
@@ -873,12 +1139,7 @@
       border-color: var(--accent);
     }
 
-    /* ── Sort bar ── */
-    .sort-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .sort-bar { display: flex; align-items: center; gap: 8px; }
 
     .sort-label {
       font-size: 11px;
@@ -916,11 +1177,7 @@
       gap: 4px;
     }
 
-    .sort-chip.active {
-      border-color: var(--accent2);
-      color: var(--accent2);
-    }
-
+    .sort-chip.active { border-color: var(--accent2); color: var(--accent2); }
     .sort-dir { font-size: 10px; }
 
     /* ── Lightbox ── */
@@ -955,11 +1212,9 @@
       display: flex; align-items: center; justify-content: center;
     }
 
-    /* scrollbar for modal */
     .modal::-webkit-scrollbar { width: 4px; }
     .modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
 
-    /* country field */
     .form-row-3 {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -987,6 +1242,17 @@
   <div id="lightboxContent"></div>
 </div>
 
+<!-- Recipe modal -->
+<div class="modal-backdrop" id="recipeBackdrop" onclick="closeRecipeOnBackdrop(event)" style="z-index:210">
+  <div class="modal" id="recipeModal">
+    <div class="modal-header">
+      <div style="flex:1"></div>
+      <button class="close-btn" onclick="closeRecipe()">×</button>
+    </div>
+    <div id="recipeModalBody"></div>
+  </div>
+</div>
+
 <!-- Header -->
 <header>
   <div class="header-top">
@@ -1001,6 +1267,7 @@
     <div class="tab" onclick="switchTab('leaderboard',this)">Top Drinks</div>
     <div class="tab" onclick="switchTab('media',this)">📷 Media</div>
     <div class="tab" onclick="switchTab('map',this)">🗺️ Map</div>
+    <div class="tab" onclick="switchTab('recipes',this)">📖 Recipes</div>
     <div class="tab" onclick="switchTab('stats',this)">Stats</div>
   </div>
 </header>
@@ -1052,6 +1319,11 @@
   <div id="mapContainer"></div>
 </div>
 
+<!-- Recipes -->
+<div class="view" id="view-recipes">
+  <div class="recipe-list" id="recipeList"></div>
+</div>
+
 <!-- Stats -->
 <div class="view" id="view-stats">
   <div id="statsSpiritFilterBar" class="spirit-filter-bar" style="padding:16px 16px 0"></div>
@@ -1071,7 +1343,6 @@
 
     <form id="ratingForm" onsubmit="submitRating(event)">
 
-      <!-- Drink info -->
       <div class="form-section">
         <div class="section-label">Drink Info</div>
         <div class="form-group" style="margin-bottom:10px">
@@ -1108,7 +1379,6 @@
         </div>
       </div>
 
-      <!-- Spirit & region -->
       <div class="form-section">
         <div class="section-label">Spirit &amp; Origin</div>
         <div class="form-row">
@@ -1136,7 +1406,6 @@
         </div>
       </div>
 
-      <!-- Scores -->
       <div class="form-section">
         <div class="section-label">Scores (1.0 – 10.0)</div>
         <div class="rating-grid">
@@ -1192,13 +1461,11 @@
         </div>
       </div>
 
-      <!-- Notes -->
       <div class="form-section">
         <div class="section-label">Tasting Notes</div>
         <textarea id="f_notes" placeholder="Describe the flavour, smell, finish, vibe…"></textarea>
       </div>
 
-      <!-- Media upload -->
       <div class="form-section">
         <div class="section-label">Photos &amp; Videos</div>
         <div class="media-upload-zone" id="uploadZone">
@@ -1222,7 +1489,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
   // ── State ──────────────────────────────────────────────────────
-  const STORAGE_KEY = 'sip_and_rate_v2';
+  const STORAGE_KEY     = 'sip_and_rate_v2';
   let currentUser       = localStorage.getItem('sip_user') || '';
   let currentFilter     = 'all';
   let currentSort       = 'newest';
@@ -1234,6 +1501,10 @@
   let statsSpiritFilter = '';
   let mapInstance       = null;
   let mapMarkersLayer   = null;
+
+  // Recipe state
+  let recipeEntryId       = null;
+  let pendingIngredients  = [];
 
   function getData() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
@@ -1366,10 +1637,7 @@
   function captureLocation() {
     const btn = document.getElementById('geoBtn');
     const status = document.getElementById('geoStatus');
-    if (!navigator.geolocation) {
-      status.textContent = 'Geolocation not supported';
-      return;
-    }
+    if (!navigator.geolocation) { status.textContent = 'Not supported'; return; }
     btn.textContent = 'Getting…';
     btn.disabled = true;
     navigator.geolocation.getCurrentPosition(
@@ -1382,7 +1650,7 @@
         btn.style.color = 'var(--success)';
         btn.style.borderColor = 'var(--success)';
       },
-      err => {
+      () => {
         status.textContent = 'Could not get location';
         btn.textContent = '📍 Tag My Location';
         btn.disabled = false;
@@ -1421,24 +1689,20 @@
   }
 
   // ── Media validation ───────────────────────────────────────────
-  const ALLOWED_MIME_TYPES = [
-    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif',
-    'video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'
-  ];
-  const ALLOWED_EXTENSIONS = /\.(jpe?g|png|gif|webp|heic|heif|mp4|mov|webm|m4v)$/i;
-  const MAX_FILE_SIZE_MB    = 50;
-  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+  const ALLOWED_MIME_TYPES  = ['image/jpeg','image/png','image/gif','image/webp','image/heic','image/heif','video/mp4','video/quicktime','video/webm','video/x-m4v'];
+  const ALLOWED_EXTENSIONS  = /\.(jpe?g|png|gif|webp|heic|heif|mp4|mov|webm|m4v)$/i;
+  const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
 
   function validateFile(file) {
     const errors = [];
     if (!ALLOWED_MIME_TYPES.includes(file.type))
-      errors.push(`"${file.name}" has an unsupported file type (${file.type || 'unknown'}).`);
+      errors.push(`"${file.name}" has an unsupported file type.`);
     if (!ALLOWED_EXTENSIONS.test(file.name))
-      errors.push(`"${file.name}" has an unsupported file extension.`);
+      errors.push(`"${file.name}" has an unsupported extension.`);
     if (file.size > MAX_FILE_SIZE_BYTES)
-      errors.push(`"${file.name}" is too large (${(file.size/1024/1024).toFixed(1)} MB). Max is ${MAX_FILE_SIZE_MB} MB.`);
+      errors.push(`"${file.name}" is too large (max 50 MB).`);
     if (file.size === 0)
-      errors.push(`"${file.name}" appears to be empty.`);
+      errors.push(`"${file.name}" is empty.`);
     return errors;
   }
 
@@ -1459,7 +1723,6 @@
     const remaining = 10 - pendingMedia.length;
     const toProcess = Array.from(files).slice(0, remaining);
     const allErrors = [];
-
     toProcess.forEach(file => {
       const errors = validateFile(file);
       if (errors.length) { allErrors.push(...errors); return; }
@@ -1467,18 +1730,18 @@
       const reader  = new FileReader();
       reader.onload = e => {
         const dataUrl = e.target.result;
-        const isValidDataUrl = isVideo ? dataUrl.startsWith('data:video/') : dataUrl.startsWith('data:image/');
-        if (!isValidDataUrl) { showUploadError([`"${file.name}" failed content verification.`]); return; }
+        if (!(isVideo ? dataUrl.startsWith('data:video/') : dataUrl.startsWith('data:image/'))) {
+          showUploadError([`"${file.name}" failed verification.`]); return;
+        }
         pendingMedia.push({ dataUrl, type: isVideo ? 'video' : 'image', name: file.name });
         renderMediaPreviews();
       };
       reader.onerror = () => showUploadError([`"${file.name}" could not be read.`]);
       reader.readAsDataURL(file);
     });
-
     if (allErrors.length) showUploadError(allErrors);
     const ignored = Array.from(files).length - toProcess.length;
-    if (ignored > 0) showUploadError([`${ignored} file(s) ignored — maximum 10 files per rating.`]);
+    if (ignored > 0) showUploadError([`${ignored} file(s) ignored — max 10 per rating.`]);
   }
 
   function renderMediaPreviews() {
@@ -1497,7 +1760,7 @@
     renderMediaPreviews();
   }
 
-  // ── Submit ─────────────────────────────────────────────────────
+  // ── Submit rating ──────────────────────────────────────────────
   function submitRating(e) {
     e.preventDefault();
     const scores = {
@@ -1525,6 +1788,7 @@
       media:   [...pendingMedia],
       scores,
       overall,
+      recipe:  null,
       ts: new Date().toISOString(),
     };
 
@@ -1545,12 +1809,13 @@
     renderAll();
   }
 
-  // ── Rendering ──────────────────────────────────────────────────
+  // ── Render all ─────────────────────────────────────────────────
   function renderAll() {
     renderFeed();
     renderLeaderboard();
     renderStats();
     renderMedia();
+    renderRecipes();
   }
 
   function timeAgo(iso) {
@@ -1571,6 +1836,7 @@
     return [d.city, d.state, d.country].filter(Boolean).join(', ');
   }
 
+  // ── Feed ───────────────────────────────────────────────────────
   function renderFeed() {
     const data = applySortFilter(getData());
     const el = document.getElementById('feedList');
@@ -1587,6 +1853,7 @@
     el.innerHTML = data.map(d => {
       const loc = locationStr(d);
       const tags = [d.spirit, d.region, d.price].filter(Boolean);
+      const hasRecipe = !!(d.recipe && (d.recipe.ingredients || []).length);
       const scoreRows = [
         ['Taste',        d.scores.taste],
         ['Ambiance',     d.scores.ambiance],
@@ -1625,7 +1892,13 @@
           ${d.notes ? `<div class="card-note">"${esc(d.notes)}"</div>` : ''}
           <div class="card-footer">
             <div class="rater-name">— ${esc(d.user)}</div>
-            <div class="card-time">${timeAgo(d.ts)}</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <button class="recipe-pill ${hasRecipe?'has-recipe':''}"
+                      onclick="openRecipe(${d.id});event.stopPropagation()">
+                📖 ${hasRecipe ? 'Recipe' : 'Add Recipe'}
+              </button>
+              <div class="card-time">${timeAgo(d.ts)}</div>
+            </div>
           </div>
         </div>
       </div>`;
@@ -1653,11 +1926,7 @@
   function renderLeaderboard() {
     const allData = getData();
     renderSpiritFilter('lbSpiritFilterBar', lbSpiritFilter, 'setLbSpirit');
-
-    const data = lbSpiritFilter
-      ? allData.filter(d => d.spirit === lbSpiritFilter)
-      : allData;
-
+    const data = lbSpiritFilter ? allData.filter(d => d.spirit === lbSpiritFilter) : allData;
     const el = document.getElementById('leaderboardList');
     if (!data.length) {
       el.innerHTML = `<div class="empty"><div class="empty-icon">🏆</div><div class="empty-title">${lbSpiritFilter ? 'No ' + lbSpiritFilter + ' ratings yet' : 'No ratings yet'}</div></div>`;
@@ -1680,11 +1949,7 @@
   function renderStats() {
     const allData = getData();
     renderSpiritFilter('statsSpiritFilterBar', statsSpiritFilter, 'setStatsSpirit');
-
-    const data = statsSpiritFilter
-      ? allData.filter(d => d.spirit === statsSpiritFilter)
-      : allData;
-
+    const data = statsSpiritFilter ? allData.filter(d => d.spirit === statsSpiritFilter) : allData;
     const el = document.getElementById('statsContent');
     if (!data.length) {
       el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">${statsSpiritFilter ? 'No ' + statsSpiritFilter + ' ratings yet' : 'No data yet'}</div></div>`;
@@ -1714,7 +1979,6 @@
       .map(([b,s]) => [b, (s/barCount[b]).toFixed(1)])
       .sort((a,b)=>b[1]-a[1])[0];
 
-    // Average component scores
     const avgTaste        = (data.reduce((s,d)=>s+(d.scores.taste||0),0)/data.length).toFixed(1);
     const avgAmbiance     = (data.reduce((s,d)=>s+(d.scores.ambiance||0),0)/data.length).toFixed(1);
     const avgService      = (data.reduce((s,d)=>s+(d.scores.service||0),0)/data.length).toFixed(1);
@@ -1749,10 +2013,7 @@
       <div class="lb-card" style="margin-bottom:16px">
         <div class="lb-row">
           <div style="font-size:22px">🏅</div>
-          <div class="lb-info">
-            <div class="lb-drink">${esc(topBar[0])}</div>
-            <div class="lb-bar">Avg score</div>
-          </div>
+          <div class="lb-info"><div class="lb-drink">${esc(topBar[0])}</div><div class="lb-bar">Avg score</div></div>
           <div class="lb-score">${topBar[1]}</div>
         </div>
       </div>` : ''}
@@ -1786,7 +2047,7 @@
     data.forEach(d => {
       if (d.media && d.media.length) {
         d.media.forEach((m, i) => {
-          allMedia.push({ ...m, entryId: d.id, entryIdx: i, drink: d.drink, bar: d.bar, ts: d.ts });
+          allMedia.push({ ...m, entryId: d.id, entryIdx: i, drink: d.drink, bar: d.bar });
         });
       }
     });
@@ -1795,7 +2056,7 @@
       el.innerHTML = `<div class="empty" style="grid-column:1/-1">
         <div class="empty-icon">📷</div>
         <div class="empty-title">No media yet</div>
-        <div class="empty-sub">Add photos and videos when rating drinks!</div>
+        <div class="empty-sub">Add photos and videos when rating!</div>
       </div>`;
       return;
     }
@@ -1822,75 +2083,310 @@
         <div class="map-empty">
           <div style="font-size:48px;margin-bottom:12px">🗺️</div>
           <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">No locations yet</div>
-          <div style="font-size:14px">Tap 📍 Tag My Location when adding a rating to place bars on the map.</div>
+          <div>Tap 📍 Tag My Location when adding a rating to place bars on the map.</div>
         </div>`;
       return;
     }
 
-    // Init map once
     if (!mapInstance) {
-      mapInstance = L.map('mapContainer', { zoomControl: true }).setView([20, 0], 2);
+      mapInstance = L.map('mapContainer').setView([20, 0], 2);
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 20
+        subdomains: 'abcd', maxZoom: 20
       }).addTo(mapInstance);
     }
 
-    // Clear old markers
     if (mapMarkersLayer) {
       mapMarkersLayer.clearLayers();
     } else {
       mapMarkersLayer = L.layerGroup().addTo(mapInstance);
     }
 
-    // Group ratings by bar (normalized name)
     const barGroups = {};
     data.forEach(d => {
       const key = d.bar.toLowerCase().trim();
-      if (!barGroups[key]) {
-        barGroups[key] = { bar: d.bar, lat: d.lat, lng: d.lng, location: locationStr(d), entries: [] };
-      }
+      if (!barGroups[key]) barGroups[key] = { bar: d.bar, lat: d.lat, lng: d.lng, location: locationStr(d), entries: [] };
       barGroups[key].entries.push(d);
     });
 
     const bounds = [];
     Object.values(barGroups).forEach(g => {
-      const avg     = (g.entries.reduce((s,e)=>s+e.overall,0)/g.entries.length).toFixed(1);
-      const count   = g.entries.length;
-      const color   = scoreColor(+avg);
-      const icon = L.divIcon({
+      const avg   = (g.entries.reduce((s,e)=>s+e.overall,0)/g.entries.length).toFixed(1);
+      const color = scoreColor(+avg);
+      const icon  = L.divIcon({
         className: '',
         html: `<div style="background:${color};width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:white;border:2px solid rgba(255,255,255,0.8);box-shadow:0 2px 10px rgba(0,0,0,0.5)">${avg}</div>`,
-        iconSize: [34, 34],
-        iconAnchor: [17, 17],
-        popupAnchor: [0, -20]
+        iconSize: [34,34], iconAnchor: [17,17], popupAnchor: [0,-20]
       });
-
-      const topDrink = [...g.entries].sort((a,b)=>b.overall-a.overall)[0];
-      const popupHtml = `
-        <div style="min-width:160px">
-          <strong>${esc(g.bar)}</strong><br>
-          <span style="color:var(--muted);font-size:12px">${esc(g.location)}</span><br><br>
-          <span style="font-size:13px">Avg Score: <strong style="color:${color}">${avg}</strong></span><br>
-          <span style="font-size:12px;color:var(--muted)">${count} rating${count>1?'s':''}</span><br>
-          ${topDrink ? `<span style="font-size:12px">Top: <em>${esc(topDrink.drink)}</em></span>` : ''}
-        </div>`;
-
+      const top = [...g.entries].sort((a,b)=>b.overall-a.overall)[0];
       const marker = L.marker([g.lat, g.lng], { icon }).addTo(mapMarkersLayer);
-      marker.bindPopup(popupHtml, { maxWidth: 240 });
+      marker.bindPopup(`<div style="min-width:160px">
+        <strong>${esc(g.bar)}</strong><br>
+        <span style="color:var(--muted);font-size:12px">${esc(g.location)}</span><br><br>
+        Avg Score: <strong style="color:${color}">${avg}</strong><br>
+        <span style="font-size:12px;color:var(--muted)">${g.entries.length} rating${g.entries.length>1?'s':''}</span>
+        ${top?`<br><span style="font-size:12px">Top: <em>${esc(top.drink)}</em></span>`:''}
+      </div>`, { maxWidth: 240 });
       bounds.push([g.lat, g.lng]);
     });
 
-    if (bounds.length === 1) {
-      mapInstance.setView(bounds[0], 14);
-    } else if (bounds.length > 1) {
-      mapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
-    }
-
+    if (bounds.length === 1) mapInstance.setView(bounds[0], 14);
+    else if (bounds.length > 1) mapInstance.fitBounds(bounds, { padding: [40,40], maxZoom: 14 });
     setTimeout(() => { if (mapInstance) mapInstance.invalidateSize(); }, 100);
   }
 
+  // ── Recipes tab ────────────────────────────────────────────────
+  function renderRecipes() {
+    const el = document.getElementById('recipeList');
+    const data = getData().filter(d => d.recipe && d.recipe.ingredients && d.recipe.ingredients.length > 0);
+
+    if (!data.length) {
+      el.innerHTML = `<div class="empty">
+        <div class="empty-icon">📖</div>
+        <div class="empty-title">No recipes yet</div>
+        <div class="empty-sub">Tap <strong style="color:var(--accent2)">📖 Add Recipe</strong> on any drink card in the Feed to log its recipe.</div>
+      </div>`;
+      return;
+    }
+
+    el.innerHTML = data.map(d => {
+      const r = d.recipe;
+      const badges = [r.method, r.glass].filter(Boolean);
+      const preview = (r.ingredients || []).slice(0, 4);
+      const more    = (r.ingredients || []).length - preview.length;
+      return `
+        <div class="recipe-card" onclick="openRecipe(${d.id})">
+          <div class="recipe-card-header">
+            <div class="recipe-card-title">${esc(d.drink)}</div>
+            <div class="recipe-card-bar">${esc(d.bar)}${locationStr(d) ? ' · ' + esc(locationStr(d)) : ''}</div>
+          </div>
+          <div class="recipe-card-body">
+            ${badges.length ? `<div class="recipe-badges">${badges.map(b=>`<div class="recipe-badge">${esc(b)}</div>`).join('')}</div>` : ''}
+            <div class="recipe-ingredients-preview">
+              ${preview.map(i=>`
+                <div class="recipe-ingr-row">
+                  <div class="recipe-ingr-amount">${esc(i.amount)}</div>
+                  <div class="recipe-ingr-name">${esc(i.ingredient)}</div>
+                </div>`).join('')}
+              ${more > 0 ? `<div class="recipe-more">+ ${more} more ingredient${more>1?'s':''}</div>` : ''}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── Recipe modal ───────────────────────────────────────────────
+  function openRecipe(entryId) {
+    recipeEntryId = entryId;
+    const entry = getData().find(d => d.id === entryId);
+    if (!entry) return;
+    if (entry.recipe && entry.recipe.ingredients && entry.recipe.ingredients.length) {
+      renderRecipeView(entry);
+    } else {
+      renderRecipeEditForm(entry, null);
+    }
+    document.getElementById('recipeBackdrop').classList.add('open');
+  }
+
+  function closeRecipe() {
+    document.getElementById('recipeBackdrop').classList.remove('open');
+    recipeEntryId = null;
+    pendingIngredients = [];
+  }
+
+  function closeRecipeOnBackdrop(e) {
+    if (e.target === document.getElementById('recipeBackdrop')) closeRecipe();
+  }
+
+  function renderRecipeView(entry) {
+    const r   = entry.recipe;
+    const loc = locationStr(entry);
+    const badges = [r.method, r.glass].filter(Boolean);
+
+    document.getElementById('recipeModalBody').innerHTML = `
+      <div class="recipe-view-header">
+        <div style="font-size:32px;margin-bottom:8px">🍸</div>
+        <div class="recipe-view-drink">${esc(entry.drink)}</div>
+        <div class="recipe-view-bar">${esc(entry.bar)}</div>
+        ${loc ? `<div class="recipe-view-loc">📍 ${esc(loc)}</div>` : ''}
+        ${badges.length ? `<div class="recipe-view-badges">${badges.map(b=>`<div class="recipe-view-badge">${esc(b)}</div>`).join('')}</div>` : ''}
+      </div>
+
+      <div class="recipe-section-title">Ingredients</div>
+      <div class="recipe-ingredients" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:4px 16px;margin-bottom:20px">
+        ${(r.ingredients||[]).map(i=>`
+          <div class="recipe-ingr-line">
+            <div class="amount">${esc(i.amount)}</div>
+            <div class="ingr-name">${esc(i.ingredient)}</div>
+          </div>`).join('')}
+      </div>
+
+      ${r.garnish ? `
+        <div class="recipe-section-title">Garnish</div>
+        <div class="recipe-garnish-line" style="margin-bottom:20px">
+          <div class="garnish-label">🍋</div>
+          <div class="garnish-val">${esc(r.garnish)}</div>
+        </div>` : ''}
+
+      ${r.instructions ? `
+        <div class="recipe-section-title">Instructions</div>
+        <div class="recipe-instructions">${esc(r.instructions)}</div>` : ''}
+
+      <div class="recipe-action-row">
+        <button class="recipe-edit-btn" onclick="startEditRecipe()">✏️ Edit Recipe</button>
+      </div>`;
+  }
+
+  function startEditRecipe() {
+    const entry = getData().find(d => d.id === recipeEntryId);
+    if (!entry) return;
+    renderRecipeEditForm(entry, entry.recipe);
+  }
+
+  function renderRecipeEditForm(entry, existing) {
+    pendingIngredients = existing && existing.ingredients
+      ? existing.ingredients.map(i => ({ ...i }))
+      : [{ amount: '', ingredient: '' }];
+
+    document.getElementById('recipeModalBody').innerHTML = `
+      <div style="margin-bottom:18px">
+        <div style="font-size:18px;font-weight:800;color:var(--accent)">${esc(entry.drink)}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px">${esc(entry.bar)}</div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Ingredients</div>
+        <div class="ingr-rows" id="ingrRows"></div>
+        <button type="button" class="add-ingr-btn" onclick="addIngredient()">+ Add Ingredient</button>
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Method &amp; Glass</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Method</label>
+            <select id="r_method">
+              <option value="">Select…</option>
+              <option ${existing&&existing.method==='Stirred'?'selected':''}>Stirred</option>
+              <option ${existing&&existing.method==='Shaken'?'selected':''}>Shaken</option>
+              <option ${existing&&existing.method==='Built'?'selected':''}>Built</option>
+              <option ${existing&&existing.method==='Blended'?'selected':''}>Blended</option>
+              <option ${existing&&existing.method==='Thrown'?'selected':''}>Thrown</option>
+              <option ${existing&&existing.method==='Spritz'?'selected':''}>Spritz</option>
+              <option ${existing&&existing.method==='Other'?'selected':''}>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Glass</label>
+            <select id="r_glass">
+              <option value="">Select…</option>
+              <option ${existing&&existing.glass==='Rocks / Old Fashioned'?'selected':''}>Rocks / Old Fashioned</option>
+              <option ${existing&&existing.glass==='Coupe'?'selected':''}>Coupe</option>
+              <option ${existing&&existing.glass==='Nick & Nora'?'selected':''}>Nick & Nora</option>
+              <option ${existing&&existing.glass==='Martini'?'selected':''}>Martini</option>
+              <option ${existing&&existing.glass==='Highball'?'selected':''}>Highball</option>
+              <option ${existing&&existing.glass==='Collins'?'selected':''}>Collins</option>
+              <option ${existing&&existing.glass==='Tiki / Ceramic'?'selected':''}>Tiki / Ceramic</option>
+              <option ${existing&&existing.glass==='Champagne Flute'?'selected':''}>Champagne Flute</option>
+              <option ${existing&&existing.glass==='Wine Glass'?'selected':''}>Wine Glass</option>
+              <option ${existing&&existing.glass==='Shot'?'selected':''}>Shot</option>
+              <option ${existing&&existing.glass==='Other'?'selected':''}>Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Garnish</div>
+        <input id="r_garnish" type="text" placeholder="e.g. Orange peel, Luxardo cherry"
+               value="${existing&&existing.garnish?esc(existing.garnish):''}" />
+      </div>
+
+      <div class="form-section">
+        <div class="section-label">Instructions</div>
+        <textarea id="r_instructions" placeholder="Stir with ice for 30 seconds, strain into chilled glass…">${existing&&existing.instructions?esc(existing.instructions):''}</textarea>
+      </div>
+
+      <div class="recipe-action-row">
+        ${existing && existing.ingredients && existing.ingredients.length
+          ? `<button type="button" class="recipe-edit-btn" onclick="cancelRecipeEdit()">Cancel</button>`
+          : ''}
+        <button type="button" class="recipe-save-btn" onclick="saveRecipe()">Save Recipe</button>
+      </div>`;
+
+    renderIngrRows();
+  }
+
+  function renderIngrRows() {
+    const container = document.getElementById('ingrRows');
+    if (!container) return;
+    container.innerHTML = pendingIngredients.map((ingr, i) => `
+      <div class="ingr-row">
+        <input class="ingr-amount" type="text" placeholder="1½ oz"
+               value="${esc(ingr.amount)}"
+               oninput="pendingIngredients[${i}].amount=this.value" />
+        <input class="ingr-name" type="text" placeholder="Ingredient"
+               value="${esc(ingr.ingredient)}"
+               oninput="pendingIngredients[${i}].ingredient=this.value" />
+        <button type="button" class="ingr-remove" onclick="removeIngredient(${i})">×</button>
+      </div>`).join('');
+  }
+
+  function addIngredient() {
+    pendingIngredients.push({ amount: '', ingredient: '' });
+    renderIngrRows();
+    // focus the new ingredient name field
+    const rows = document.querySelectorAll('.ingr-row');
+    if (rows.length) rows[rows.length-1].querySelector('.ingr-name').focus();
+  }
+
+  function removeIngredient(i) {
+    if (pendingIngredients.length === 1) return; // keep at least one row
+    pendingIngredients.splice(i, 1);
+    renderIngrRows();
+  }
+
+  function saveRecipe() {
+    // Capture current input values before reading pendingIngredients
+    // (oninput may not fire if user typed without triggering event)
+    document.querySelectorAll('.ingr-row').forEach((row, i) => {
+      if (pendingIngredients[i]) {
+        pendingIngredients[i].amount     = row.querySelector('.ingr-amount').value;
+        pendingIngredients[i].ingredient = row.querySelector('.ingr-name').value;
+      }
+    });
+
+    const recipe = {
+      ingredients:  pendingIngredients.filter(i => i.ingredient.trim()),
+      method:       (document.getElementById('r_method') || {}).value || '',
+      glass:        (document.getElementById('r_glass') || {}).value || '',
+      garnish:      ((document.getElementById('r_garnish') || {}).value || '').trim(),
+      instructions: ((document.getElementById('r_instructions') || {}).value || '').trim(),
+    };
+
+    if (!recipe.ingredients.length) {
+      alert('Add at least one ingredient.');
+      return;
+    }
+
+    const data = getData();
+    const idx  = data.findIndex(d => d.id === recipeEntryId);
+    if (idx !== -1) {
+      data[idx].recipe = recipe;
+      saveData(data);
+    }
+
+    const entry = data[idx];
+    renderRecipeView(entry);
+    renderAll();
+  }
+
+  function cancelRecipeEdit() {
+    const entry = getData().find(d => d.id === recipeEntryId);
+    if (entry) renderRecipeView(entry);
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────
   function esc(str) {
     return String(str||'')
       .replace(/&/g,'&amp;')
